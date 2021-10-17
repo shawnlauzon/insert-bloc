@@ -12,48 +12,58 @@ class ItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ItemBloc>(create: (context) {
-      print('Create ContentBloc for $name');
-      return ItemBloc(
-          repository: RepositoryProvider.of<ItemRepository>(context),
-          name: name);
-    }, child: BlocBuilder<ItemBloc, ItemState>(builder: (context, state) {
-      if (state.loadingStatus == LoadingStatus.loading) {
-        return const CircularProgressIndicator();
-      }
-      final item = state.item!;
-      return Column(children: [
-        Text('Item: ${item.name} => ${item.value}'),
-        Container(
-            padding: const EdgeInsets.only(left: 20),
-            child: Column(children: [
-              ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  itemCount: item.children.length,
-                  itemBuilder: (context, index) {
-                    return ItemView(name: item.children[index]);
-                  }),
-              () {
-                final child =
-                    ['one', 'two', 'three', 'four', 'five'][next(0, 5)];
-                return ElevatedButton(
-                    onPressed: () {
-                      BlocProvider.of<ItemBloc>(context)
-                          .add(AddChild(name: child));
-                    },
-                    child: Text('Add Child "$child"'));
-              }()
-            ]))
-      ]);
-    }));
+    return BlocProvider<ItemBloc>(
+      create: (context) {
+        print('Create ContentBloc for $name');
+        return ItemBloc(
+            repository: RepositoryProvider.of<ItemRepository>(context),
+            name: name);
+      },
+      child: BlocBuilder<ItemBloc, ItemState>(
+        builder: (context, state) {
+          if (state.loadingStatus == LoadingStatus.loading) {
+            return const CircularProgressIndicator();
+          }
+          final item = state.item!;
+          return Column(
+            children: [
+              Text('Item: ${item.name} => ${item.value}'),
+              Container(
+                padding: const EdgeInsets.only(left: 20),
+                child: Column(
+                  children: [
+                    ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: item.children.length,
+                        itemBuilder: (context, index) {
+                          final child = item.children[index];
+                          return ItemView(
+                            key: ValueKey('${item.id}-$child'),
+                            name: child,
+                          );
+                        }),
+                    () {
+                      final child =
+                          ['one', 'two', 'three', 'four', 'five'][next(0, 5)];
+                      return ElevatedButton(
+                          onPressed: () {
+                            BlocProvider.of<ItemBloc>(context)
+                                .add(AddChild(name: child));
+                          },
+                          child: Text('Add Child "$child"'));
+                    }()
+                  ],
+                ),
+              )
+            ],
+          );
+        },
+      ),
+    );
   }
 }
 
-final _random = new Random();
+final _random = Random();
 
-/**
- * Generates a positive random integer uniformly distributed on the range
- * from [min], inclusive, to [max], exclusive.
- */
 int next(int min, int max) => min + _random.nextInt(max - min);
