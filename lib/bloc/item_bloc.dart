@@ -19,10 +19,14 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
       emit(ItemState(item: event.item, loadingStatus: LoadingStatus.success));
     });
     on<AddChild>((event, emit) {
-      final patchedChildren = List.of(state.item!.children)
-        ..insert(0, event.name);
-      final patchedItem = state.item!.copyWith(children: patchedChildren);
-      emit(ItemState(item: patchedItem, loadingStatus: LoadingStatus.success));
+      emit(
+        ItemState(
+          item: state.item!.copyWith(
+            children: [event.name, ...state.item!.children],
+          ),
+          loadingStatus: LoadingStatus.success,
+        ),
+      );
     });
 
     add(LoadItem());
